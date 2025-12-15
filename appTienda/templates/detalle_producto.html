@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ producto.nombre }}</title>
+</head>
+<body>
+    <h1>{{ producto.nombre }}</h1>
+
+    {% if producto.imagen %}
+        <img src="{{ producto.imagen.url }}" width="250">
+    {% endif %}
+
+    <p>{{ producto.descripcion }}</p>
+    <p><strong>Precio:</strong> ${{ producto.precio_base }}</p>
+    <p><strong>Temática:</strong> Anime</p>
+    <p><strong>Categoría:</strong> {{ producto.categoria.nombre }}</p>
+
+    <br>
+    <a href="/">Volver al catálogo</a>
+</body>
+</html>

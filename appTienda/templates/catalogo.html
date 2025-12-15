@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Catálogo</title>
+</head>
+<body>
+<h1>Catálogo de Merchandising Anime</h1>
+
+    <ul>
+        {% for producto in productos %}
+            <li>
+                <h3>{{ producto.nombre }}</h3>
+                <p>{{ producto.descripcion }}</p>
+                <p>Precio: ${{ producto.precio_base }}</p>
+
+                {% if producto.imagen %}
+                    <img src="{{ producto.imagen.url }}" width="150">
+                {% endif %}
+
+                <br>
+                <a href="{% url 'detalle_producto' producto.id %}">
+                    Ver detalle
+                </a>
+            </li>
+            <hr>
+        {% endfor %}
+    </ul>
+</body>
+</html>

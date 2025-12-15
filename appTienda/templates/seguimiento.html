@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Seguimiento Pedido</title>
+</head>
+<body>
+<h1>Seguimiento de Pedido Anime</h1>
+
+    <p><strong>Cliente:</strong> {{ pedido.nombre_cliente }}</p>
+    <p><strong>Producto:</strong> {{ pedido.producto }}</p>
+    <p><strong>Estado del pedido:</strong> {{ pedido.estado }}</p>
+    <p><strong>Estado del pago:</strong> {{ pedido.estado_pago }}</p>
+    <p><strong>Plataforma:</strong> {{ pedido.plataforma }}</p>
+    <p><strong>Fecha creación:</strong> {{ pedido.fecha_creacion }}</p>
+
+    {% if pedido.imagen_referencia %}
+        <h3>Imagen de referencia:</h3>
+        <img src="{{ pedido.imagen_referencia.url }}" width="250">
+    {% endif %}
+</body>
+</html>
