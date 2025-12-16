@@ -1,8 +1,8 @@
 # 🛒 Backend Tienda Anime (Django)
 
-Proyecto backend desarrollado en Django para la gestión de una tienda de productos relacionados con anime (merchandising), como figuras, películas, series y pedidos realizados por distintas plataformas.
+Proyecto backend desarrollado en Django para la gestión de una tienda de productos relacionados con anime (merchandising), como figuras, posters, poleras,  pedidos realizados por distintas plataformas.
 
-Este proyecto fue realizado como evaluación académica, cumpliendo una pauta específica de backend.
+
 
 ---
 
@@ -45,6 +45,14 @@ Esto permite:
 * Acceso sin autenticación
 
 ---
+
+## 🗂️ Funcionalidad extra
+
+Para mejorar la usabilidad del panel de control (Admin), implementamos una función extra:
+
+Se modificó la vista de listado de Pedidos en el Django Admin para reemplazar el texto simple del campo Estado por etiquetas de color .
+
+Esto permite al administrador identificar visualmente el estado de un pedido (ej: 🔴 Cancelado, 🟢 Finalizado, 🟠 En proceso) sin tener que leer el campo completo, optimizando la gestión  de trabajo.
 
 ## 🗂️ Estructura del proyecto
 

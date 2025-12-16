@@ -2,21 +2,83 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Seguimiento Pedido</title>
+    <title>Seguimiento de Pedido #{{ pedido.id }}</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .pedido-header { padding: 15px; border-bottom: 2px solid #007bff; margin-bottom: 20px; }
+        .estado-box { 
+            padding: 15px; 
+            border-radius: 5px; 
+            font-size: 1.2em; 
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .estado-box.solicitado { background-color: #ffc107; color: #333; }
+        .estado-box.aprobado { background-color: #28a745; color: white; }
+        .estado-box.en_proceso { background-color: #17a2b8; color: white; }
+        .estado-box.realizada { background-color: #fd7e14; color: white; }
+        .estado-box.entregada, .estado-box.finalizada { background-color: #6f42c1; color: white; }
+        .estado-box.cancelada { background-color: #dc3545; color: white; }
+        
+        .detalle-item { margin-bottom: 10px; }
+        .galeria-referencia { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .galeria-referencia img { max-width: 150px; height: auto; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
 </head>
 <body>
-<h1>Seguimiento de Pedido Anime</h1>
+    <div class="pedido-header">
+        <h1>Seguimiento de Pedido #{{ pedido.id }}</h1>
+        <p>Cliente: <strong>{{ pedido.nombre_cliente }}</strong></p>
+    </div>
 
-    <p><strong>Cliente:</strong> {{ pedido.nombre_cliente }}</p>
-    <p><strong>Producto:</strong> {{ pedido.producto }}</p>
-    <p><strong>Estado del pedido:</strong> {{ pedido.estado }}</p>
-    <p><strong>Estado del pago:</strong> {{ pedido.estado_pago }}</p>
-    <p><strong>Plataforma:</strong> {{ pedido.plataforma }}</p>
-    <p><strong>Fecha creación:</strong> {{ pedido.fecha_creacion }}</p>
+    <h2>Estado Actual</h2>
+    <div class="estado-box {{ pedido.estado }}">
+        Estado del Pedido: {{ pedido.get_estado_display }}
+    </div>
+    <div class="estado-box" style="background-color: #e9ecef; color: #333;">
+        Estado de Pago: <strong>{{ pedido.get_estado_pago_display }}</strong>
+    </div>
 
-    {% if pedido.imagen_referencia %}
-        <h3>Imagen de referencia:</h3>
-        <img src="{{ pedido.imagen_referencia.url }}" width="250">
-    {% endif %}
+    <h3>Detalles del Pedido</h3>
+    <div class="detalle-item">
+        <strong>Descripción de la Solicitud:</strong>
+        <p>{{ pedido.descripcion }}</p>
+    </div>
+
+    <div class="detalle-item">
+        <strong>Producto de Referencia:</strong>
+        {% if pedido.producto %}
+            <a href="{% url 'detalle_producto' pedido.producto.id %}">{{ pedido.producto.nombre }}</a>
+        {% else %}
+            Producto genérico / Sin referencia de catálogo
+        {% endif %}
+    </div>
+
+    <div class="detalle-item">
+        <strong>Fecha Solicitada (Entrega Deseada):</strong>
+        {% if pedido.fecha_solicitada %}
+            {{ pedido.fecha_solicitada|date:"d M Y" }}
+        {% else %}
+            No especificada
+        {% endif %}
+    </div>
+
+    <h3>Imágenes de Referencia Proporcionadas</h3>
+    {% with imagenes=pedido.imagenes_referencia.all %}
+        {% if imagenes %}
+            <div class="galeria-referencia">
+                {% for imagen_ref in imagenes %}
+                    <a href="{{ imagen_ref.imagen.url }}" target="_blank">
+                        <img src="{{ imagen_ref.imagen.url }}" alt="Referencia {{ forloop.counter }}">
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No se adjuntaron imágenes de referencia para este pedido.</p>
+        {% endif %}
+    {% endwith %}
+
+    <br>
+    <a href="{% url 'catalogo' %}">← Volver al catálogo</a>
 </body>
 </html>

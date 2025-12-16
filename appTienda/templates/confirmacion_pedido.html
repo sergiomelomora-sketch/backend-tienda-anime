@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de Pedido</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; text-align: center; }
+        .confirmation-box { 
+            max-width: 600px; 
+            margin: 30px auto; 
+            padding: 30px; 
+            border: 2px solid #28a745; 
+            border-radius: 10px; 
+            background-color: #f0fff4; 
+        }
+        .token-url {
+            display: block;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px dashed #ccc;
+            word-break: break-all;
+            font-size: 1.1em;
+            color: #007bff;
+        }
+        .btn-seguimiento {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="confirmation-box">
+        <h1>✅ Solicitud Recibida</h1>
+        
+        <p>¡Gracias, <strong>{{ pedido.nombre_cliente }}</strong>! Hemos recibido tu solicitud de pedido personalizado (ID: #{{ pedido.id }}).</p>
+        <p>Tu solicitud ha sido registrada con el estado **{{ pedido.get_estado_display }}** y estado de pago **{{ pedido.get_estado_pago_display }}**.</p>
+        
+        <h2>URL de Seguimiento Única (Requisito II.9)</h2>
+        <p>Por favor, guarda la siguiente URL. Te permitirá consultar el estado de tu pedido en cualquier momento:</p>
+        
+        <strong class="token-url">{{ url_seguimiento }}</strong>
+        
+        <p>Token de Seguimiento: <code>{{ pedido.token_seguimiento }}</code></p>
+        
+        <a href="{{ url_seguimiento }}" class="btn-seguimiento">
+            Ir a la Página de Seguimiento
+        </a>
+        
+        <p style="margin-top: 25px;"><small>Pronto serás contactado por nuestro equipo.</small></p>
+    </div>
+    
+    <a href="{% url 'catalogo' %}">Volver al catálogo</a>
+</body>
+</html>

@@ -2,29 +2,71 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Catálogo</title>
+    <title>Catálogo de Artículos Personalizados</title>
+    <style>
+        /* Estilos básicos para mejor visualización de filtros y destacados */
+        body { font-family: sans-serif; margin: 20px; }
+        .filtros-busqueda { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9; }
+        .producto-lista { border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-left: 5px solid #007bff; }
+        .destacado { border-left: 5px solid #ffc107; background-color: #fffbe6; }
+        .destacado h3::after { content: " (Destacado)"; color: #ffc107; font-size: 0.8em; margin-left: 5px; }
+    </style>
 </head>
 <body>
-<h1>Catálogo de Merchandising Anime</h1>
+    <h1>Catálogo de Productos</h1>
+    
+    <div class="filtros-busqueda">
+        <h2>Buscar y Filtrar</h2>
+        
+        <form method="GET" action="{% url 'catalogo' %}" style="margin-bottom: 10px;">
+            <input type="text" name="q" placeholder="Buscar por nombre..." value="{{ query|default:'' }}">
+            <button type="submit">Buscar</button>
+            {% if query %}
+                <a href="{% url 'catalogo' %}">Limpiar Búsqueda</a>
+            {% endif %}
+        </form>
 
-    <ul>
-        {% for producto in productos %}
-            <li>
-                <h3>{{ producto.nombre }}</h3>
-                <p>{{ producto.descripcion }}</p>
-                <p>Precio: ${{ producto.precio_base }}</p>
+        <form method="GET" action="{% url 'catalogo' %}">
+            <label for="categoria">Filtrar por Categoría:</label>
+            <select name="categoria" id="categoria" onchange="this.form.submit()">
+                <option value="">Todas las categorías</option>
+                {% for categoria in categorias %}
+                    <option value="{{ categoria.id }}" {% if categoria.id|stringformat:"i" == categoria_seleccionada %}selected{% endif %}>
+                        {{ categoria.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
 
-                {% if producto.imagen %}
-                    <img src="{{ producto.imagen.url }}" width="150">
-                {% endif %}
+    {% if productos %}
+        <h2>Productos Encontrados ({{ productos.count }})</h2>
+        <ul>
+            {% for producto in productos %}
+                <li class="producto-lista {% if producto.destacado %}destacado{% endif %}">
+                    {% if producto.destacado %}
+                        <p style="color: #ffc107; font-weight: bold;">⭐ Producto Destacado</p>
+                    {% endif %}
+                    
+                    <h3>{{ producto.nombre }}</h3>
+                    <p>Categoría: {{ producto.categoria.nombre }}</p>
+                    <p>Precio Base: <strong style="color: green;">${{ producto.precio_base }}</strong></p>
 
-                <br>
-                <a href="{% url 'detalle_producto' producto.id %}">
-                    Ver detalle
-                </a>
-            </li>
-            <hr>
-        {% endfor %}
-    </ul>
+                    {% if producto.imagen %}
+                        <img src="{{ producto.imagen.url }}" alt="Imagen de {{ producto.nombre }}" width="150" style="border-radius: 5px;">
+                    {% endif %}
+
+                    <br>
+                    <a href="{% url 'detalle_producto' producto.id %}" style="display: inline-block; margin-top: 10px; padding: 8px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">
+                        Ver Detalle y Solicitar
+                    </a>
+                </li>
+                <hr>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No se encontraron productos que coincidan con los criterios de búsqueda o filtro.</p>
+    {% endif %}
+
 </body>
 </html>

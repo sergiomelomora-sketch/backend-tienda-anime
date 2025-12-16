@@ -2,21 +2,53 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>{{ producto.nombre }}</title>
+    <title>{{ producto.nombre }} | Tienda Personalizada</title>
+    <style>
+        /* Estilos básicos para la galería */
+        body { font-family: sans-serif; margin: 20px; }
+        .galeria { display: flex; gap: 10px; margin-bottom: 20px; }
+        .galeria img { max-width: 150px; height: auto; border: 1px solid #ccc; border-radius: 5px; }
+        .info-producto { padding: 15px; border-top: 1px solid #eee; }
+        .btn-solicitar { 
+            display: inline-block; 
+            padding: 10px 20px; 
+            background-color: #28a745; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            font-size: 1.1em;
+            margin-top: 15px;
+        }
+        .btn-solicitar:hover { background-color: #218838; }
+    </style>
 </head>
 <body>
     <h1>{{ producto.nombre }}</h1>
+    <p>Categoría: <strong>{{ producto.categoria.nombre }}</strong></p>
 
-    {% if producto.imagen %}
-        <img src="{{ producto.imagen.url }}" width="250">
-    {% endif %}
+    <h2>Imágenes del Producto</h2>
+    <div class="galeria">
+        
+        {% if producto.imagen %}
+            <img src="{{ producto.imagen.url }}" alt="Imagen Principal de {{ producto.nombre }}">
+        {% endif %}
 
-    <p>{{ producto.descripcion }}</p>
-    <p><strong>Precio:</strong> ${{ producto.precio_base }}</p>
-    <p><strong>Temática:</strong> Anime</p>
-    <p><strong>Categoría:</strong> {{ producto.categoria.nombre }}</p>
+        {% for img_adicional in producto.imagenes.all %}
+            <img src="{{ img_adicional.imagen.url }}" alt="Imagen adicional {{ forloop.counter }}">
+        {% endfor %}
+    </div>
 
-    <br>
-    <a href="/">Volver al catálogo</a>
+    <div class="info-producto">
+        <h2>Descripción Completa</h2>
+        <p>{{ producto.descripcion }}</p>
+        <p><strong>Precio Base:</strong> <span style="color: green; font-size: 1.2em;">${{ producto.precio_base }}</span></p>
+    </div>
+
+    <a href="{% url 'solicitar_pedido_con_producto' producto.id %}" class="btn-solicitar">
+        Solicitar este Producto Personalizado
+    </a>
+    
+    <br><br>
+    <a href="{% url 'catalogo' %}">← Volver al catálogo</a>
 </body>
 </html>
