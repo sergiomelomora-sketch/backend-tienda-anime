@@ -76,13 +76,13 @@ backend-tienda-anime/
 1. Clonar el repositorio:
 
 ```bash
-
+https://github.com/sergiomelomora-sketch/backend-tienda-anime/tree/main
 ```
 
 2. Entrar al proyecto:
 
 ```bash
-cd backend-tienda-anime
+cd tienda_articulos
 ```
 
 3. Ejecutar migraciones:
