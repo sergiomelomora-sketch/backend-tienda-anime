@@ -20,17 +20,16 @@ class Producto(models.Model):
 class Insumo(models.Model):
     nombre = models.CharField(max_length=100)
     tipo = models.CharField(max_length=100)
-    cantidad_disponible = models.PositiveIntegerField() #evita números negativos
-    unidad = models.CharField(max_length=50, blank=True, null=True) #opcional (ej: kg, metros, unidades)
+    cantidad_disponible = models.PositiveIntegerField() 
+    unidad = models.CharField(max_length=50, blank=True, null=True)
     marca = models.CharField(max_length=100)
     color = models.CharField(max_length=50)
 
     def __str__(self):
-        return f"{self.nombre} - {self.color}" #mejora la visualización en el Admin
+        return f"{self.nombre} - {self.color}" 
     
 class Pedido(models.Model):
 
-    # ----- CHOICES -----
     ESTADO_PEDIDO = [
         ('solicitado', 'Solicitado'),
         ('aprobado', 'Aprobado'),
@@ -56,28 +55,23 @@ class Pedido(models.Model):
         ('otra', 'Otra'),
     ]
 
-    # ----- DATOS DEL CLIENTE -----
     nombre_cliente = models.CharField(max_length=100)
     contacto = models.CharField(max_length=100)
-
-    # ----- PRODUCTO -----
     producto = models.ForeignKey(
         Producto,
-        on_delete=models.SET_NULL, #no rompe pedidos si borran un producto
+        on_delete=models.SET_NULL, 
         null=True,
         blank=True
     )
 
     descripcion = models.TextField()
 
-    # ----- IMÁGENES -----
     imagen_referencia = models.ImageField(
         upload_to='pedidos/',
         blank=True,
         null=True
     )
 
-    # ----- CONTROL -----
     plataforma = models.CharField(
         max_length=20,
         choices=PLATAFORMA
@@ -100,10 +94,9 @@ class Pedido(models.Model):
         null=True
     )
 
-    # ----- TOKEN -----
-    token_seguimiento = models.UUIDField( #token único y seguro
+    token_seguimiento = models.UUIDField(
         default=uuid.uuid4,
-        editable=False, #no se cambia manualmente
+        editable=False, 
         unique=True
     )
 
@@ -111,4 +104,7 @@ class Pedido(models.Model):
 
     def __str__(self):
         return f"Pedido {self.id} - {self.nombre_cliente}"
+    
+    def __str__(self):
+        return f"Pedido #{self.id} - {self.estado}"
 

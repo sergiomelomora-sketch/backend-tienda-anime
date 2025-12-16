@@ -30,6 +30,21 @@ class PedidoAdmin(admin.ModelAdmin):
         'plataforma',
         'fecha_creacion'
     )
+    list_display_links = ('id', 'nombre_cliente')
+    readonly_fields = ('token_seguimiento', 'fecha_creacion')
+    fields = (
+        'nombre_cliente',
+        'contacto',
+        'producto',
+        'descripcion',
+        'imagen_referencia',
+        'plataforma',
+        'estado',
+        'estado_pago',
+        'token_seguimiento',
+        'fecha_creacion',
+    )
+
 
     list_filter = ('estado', 'estado_pago', 'plataforma', 'fecha_creacion')
     search_fields = ('nombre_cliente', 'contacto')
@@ -39,5 +54,4 @@ class PedidoAdmin(admin.ModelAdmin):
                 'No se puede marcar un pedido como Finalizado si el pago no está Pagado.'
             )
         super().save_model(request, obj, form, change)
-
-#Esto hace que el modelo Producto y Categoria sean gestionables desde el panel de administración de Django.
+        
