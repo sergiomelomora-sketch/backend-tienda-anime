@@ -1,4 +1,4 @@
-# 🛒 Backend Tienda Anime (Django)
+# Backend Tienda Anime (Django)
 
 Proyecto backend desarrollado en Django para la gestión de una tienda de productos relacionados con anime (merchandising), como figuras, posters, poleras,  pedidos realizados por distintas plataformas.
 
@@ -6,7 +6,7 @@ Proyecto backend desarrollado en Django para la gestión de una tienda de produc
 
 ---
 
-## 🚀 Tecnologías utilizadas
+##  Tecnologías utilizadas
 
 * Python 3
 * Django 5
@@ -16,7 +16,7 @@ Proyecto backend desarrollado en Django para la gestión de una tienda de produc
 
 ---
 
-## 📦 Funcionalidades principales
+##  Funcionalidades principales
 
 * Gestión de **categorías** de productos
 * Gestión de **productos** de la tienda
@@ -28,7 +28,7 @@ Proyecto backend desarrollado en Django para la gestión de una tienda de produc
 
 ---
 
-## 🔐 Seguimiento de pedidos (Token)
+##  Seguimiento de pedidos (Token)
 
 Cada pedido genera automáticamente un **token único (UUID)** que permite al cliente acceder al estado de su pedido mediante una URL de seguimiento.
 
@@ -46,7 +46,7 @@ Esto permite:
 
 ---
 
-## 🗂️ Funcionalidad extra
+##  Funcionalidad extra
 
 Para mejorar la usabilidad del panel de control (Admin), implementamos una función extra:
 
@@ -54,7 +54,7 @@ Se modificó la vista de listado de Pedidos en el Django Admin para reemplazar e
 
 Esto permite al administrador identificar visualmente el estado de un pedido (ej: 🔴 Cancelado, 🟢 Finalizado, 🟠 En proceso) sin tener que leer el campo completo, optimizando la gestión  de trabajo.
 
-## 🗂️ Estructura del proyecto
+##  Estructura del proyecto
 
 ```
 backend-tienda-anime/
@@ -66,7 +66,7 @@ backend-tienda-anime/
 │   ├── models.py
 │   ├── views.py
 │   ├── urls.py
-│
+│   ├── forms.py
 ├── tienda_articulos/
 │   ├── settings.py
 │   ├── urls.py
@@ -79,7 +79,7 @@ backend-tienda-anime/
 
 ---
 
-## ⚙️ Instalación y ejecución
+##  Instalación y ejecución
 
 1. Clonar el repositorio:
 
@@ -119,7 +119,7 @@ http://127.0.0.1:8000/admin/
 
 ---
 
-## 🧠 Decisiones de diseño
+## Decisiones de diseño
 
 * Se utilizaron **UUID** para el seguimiento de pedidos por seguridad.
 * Se emplearon **choices** en los modelos para estandarizar estados.
@@ -128,14 +128,14 @@ http://127.0.0.1:8000/admin/
 
 ---
 
-## 🤖 Declaración de uso de Inteligencia Artificial
+##  Declaración de uso de Inteligencia Artificial
 
 > Para el desarrollo de este proyecto se utilizó Inteligencia Artificial (ChatGPT) como herramienta de apoyo, principalmente para:
 
 * Comprensión del framework Django y su estructura.
 * Apoyo en la definición de modelos, vistas y rutas.
 * Resolución de errores puntuales durante el desarrollo.
-* Explicación de conceptos técnicos como Django Admin, AppConfig y uso de `choices`.
+* Explicación de conceptos técnicos como uso de `choices`.
 
 > La herramienta fue utilizada como apoyo al aprendizaje. Todas las decisiones de diseño, comprensión del código y la implementación final fueron realizadas y validadas por el equipo.
 
