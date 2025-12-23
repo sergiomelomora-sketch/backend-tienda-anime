@@ -1,6 +1,8 @@
 #hecho por el equipo
 from django.urls import path
 from . import views
+from .views import reporte_pedidos
+
 
 urlpatterns = [
     
@@ -20,4 +22,7 @@ urlpatterns = [
     
     
     path('seguimiento/<uuid:token>/', views.seguimiento_pedido, name='seguimiento'),
+    
+    path('reporte/', reporte_pedidos, name='reporte_pedidos'),
+
 ]

@@ -37,6 +37,19 @@
                 {% endfor %}
             </select>
         </form>
+
+        <form method="GET" action="{% url 'catalogo' %}" style="margin-top: 10px;">
+            <button type="submit" name="destacados" value="1">
+              Ver solo productos destacados
+            </button>
+
+            {% if destacados_activo %}
+                <a href="{% url 'catalogo' %}" style="margin-left: 10px;">
+                    🔄 Ver todos los productos
+                </a>
+            {% endif %}
+        </form>
+
     </div>
 
     {% if productos %}

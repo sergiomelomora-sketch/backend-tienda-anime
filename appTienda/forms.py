@@ -1,15 +1,17 @@
 # forms.py
 
 from django import forms
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+from django.forms.widgets import Input
+
 from .models import Pedido
-# widget con base input ayuda IA(chatgpt)
-from django.forms.widgets import Input 
 
 
-# uso de IA(chatgpt)
+# Widget personalizado para permitir múltiples archivos
 class MultipleFileInput(Input):
     input_type = 'file'
-    
+
     def __init__(self, attrs=None):
         default_attrs = {'multiple': True}
         if attrs:
@@ -17,34 +19,49 @@ class MultipleFileInput(Input):
         super().__init__(default_attrs)
 
 
-# hecho por el equipo
+# Formulario público de solicitud de pedido
 class PedidoSolicitudForm(forms.ModelForm):
+    # Campo extra (NO pertenece al modelo Pedido)
     imagenes_referencia = forms.FileField(
         required=False,
-        # mezcla de equipo y IA(chatgpt)
-        widget=MultipleFileInput(), 
+        widget=MultipleFileInput(),
         label="Sube tus imágenes de referencia",
         help_text="Puedes seleccionar varias imágenes (bocetos, fotos de ejemplo, etc.)."
     )
-    
-    #hecho por el equipo
+
     contacto = forms.CharField(
-        required=True, 
+        required=True,
         label="Email y/o Teléfono y/o Usuario de Red Social",
         max_length=100
     )
 
     class Meta:
         model = Pedido
-        fields = ['nombre_cliente', 'contacto', 'descripcion', 'fecha_solicitada']
-        #ayuda IA(chatgpt)
+        fields = [
+            'nombre_cliente',
+            'contacto',
+            'descripcion',
+            'fecha_solicitada'
+        ]
         widgets = {
-            'fecha_solicitada': forms.DateInput(attrs={'type': 'date', 'placeholder': 'AAAA-MM-DD'}),
+            'fecha_solicitada': forms.DateInput(
+                attrs={'type': 'date', 'placeholder': 'AAAA-MM-DD'}
+            ),
             'descripcion': forms.Textarea(attrs={'rows': 4}),
         }
-        #mezcla de equipo y dudas a la IA(chatgpt)
         labels = {
             'nombre_cliente': 'Tu Nombre Completo',
             'descripcion': 'Describe tu pedido personalizado',
             'fecha_solicitada': 'Fecha de entrega deseada (opcional)',
         }
+
+    # ✅ VALIDACIÓN CLAVE (requisito del profe)
+    def clean_fecha_solicitada(self):
+        fecha = self.cleaned_data.get('fecha_solicitada')
+
+        if fecha and fecha < timezone.now().date():
+            raise ValidationError(
+                "No puedes seleccionar una fecha que ya haya pasado."
+            )
+
+        return fecha

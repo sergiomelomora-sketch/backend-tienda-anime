@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Pedidos</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h1>Reporte del Sistema</h1>
+
+<!-- =========================
+     FORMULARIO DE FILTROS
+========================= -->
+<form method="get">
+    <label>Fecha inicio:</label>
+    <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}">
+
+    <label>Fecha fin:</label>
+    <input type="date" name="fecha_fin" value="{{ fecha_fin }}">
+
+    <label>Plataforma:</label>
+    <select name="plataforma">
+        <option value="">Todas</option>
+        {% for key, value in plataformas %}
+            <option value="{{ key }}" {% if plataforma == key %}selected{% endif %}>
+                {{ value }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Filtrar</button>
+</form>
+
+<hr>
+
+<!-- =========================
+     TABLA DE RESULTADOS
+========================= -->
+<h2>Cantidad de pedidos por estado</h2>
+
+<table border="1" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Estado</th>
+            <th>Total de pedidos</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in reporte %}
+            <tr>
+                <td>{{ item.estado }}</td>
+                <td>{{ item.total }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="2">No hay datos para los filtros seleccionados</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<!-- =========================
+     GRÁFICO
+========================= -->
+<h2>Gráfico: Pedidos por estado</h2>
+
+<canvas id="graficoPedidos" width="400" height="200"></canvas>
+
+<script>
+    const ctx = document.getElementById('graficoPedidos').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ estados|safe }},
+            datasets: [{
+                label: 'Cantidad de pedidos',
+                data: {{ totales|safe }},
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
