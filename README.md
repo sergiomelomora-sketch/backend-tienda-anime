@@ -58,9 +58,4 @@ En esta entrega hemos corregido y mejorado puntos críticos detectados anteriorm
 
 ---
 
-## 🛠️ Instalación Local
-1. Clonar el repositorio.
-2. Crear un entorno virtual: python -m venv venv.
-3. Instalar dependencias: pip install -r requirements.txt.
-4. Ejecutar migraciones: python manage.py migrate.
-5. Iniciar servidor: python manage.py runserver.
+
