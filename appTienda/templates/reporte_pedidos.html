@@ -3,91 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <title>Reporte de Pedidos</title>
-
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; line-height: 1.6; color: #333; }
+        .filtros { background: #f4f4f4; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .contenedor-grafico { width: 80%; margin: 30px auto; padding: 20px; background: #fff; border: 1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .badge-estado { background: #e3f2fd; color: #0d47a1; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
+        h1, h2 { color: #2c3e50; }
+    </style>
 </head>
 <body>
 
 <h1>Reporte del Sistema</h1>
 
-<!-- =========================
-     FORMULARIO DE FILTROS
-========================= -->
-<form method="get">
-    <label>Fecha inicio:</label>
-    <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}">
+<div class="filtros">
+    <form method="get">
+        <label><strong>Desde:</strong></label>
+        <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}">
 
-    <label>Fecha fin:</label>
-    <input type="date" name="fecha_fin" value="{{ fecha_fin }}">
+        <label style="margin-left: 15px;"><strong>Hasta:</strong></label>
+        <input type="date" name="fecha_fin" value="{{ fecha_fin }}">
 
-    <label>Plataforma:</label>
-    <select name="plataforma">
-        <option value="">Todas</option>
-        {% for key, value in plataformas %}
-            <option value="{{ key }}" {% if plataforma == key %}selected{% endif %}>
-                {{ value }}
-            </option>
-        {% endfor %}
-    </select>
+        <label style="margin-left: 15px;"><strong>Plataforma:</strong></label>
+        <select name="plataforma">
+            <option value="Todas">Todas las plataformas</option>
+            {% for key, value in plataformas %}
+                <option value="{{ key }}" {% if plataforma_sel == key %}selected{% endif %}>
+                    {{ value }}
+                </option>
+            {% endfor %}
+        </select>
 
-    <button type="submit">Filtrar</button>
-</form>
+        <button type="submit" style="margin-left: 15px; padding: 6px 20px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold;">
+            Filtrar
+        </button>
+        <a href="{% url 'reporte_pedidos' %}" style="margin-left: 10px; text-decoration: none; color: #666; font-size: 0.9em;">Limpiar</a>
+    </form>
+</div>
 
 <hr>
 
-<!-- =========================
-     TABLA DE RESULTADOS
-========================= -->
-<h2>Cantidad de pedidos por estado</h2>
-
-<table border="1" cellpadding="5">
+<h2>Resumen: Pedidos por Estado</h2>
+<table>
     <thead>
         <tr>
-            <th>Estado</th>
-            <th>Total de pedidos</th>
+            <th>Estado del Pedido</th>
+            <th>Cantidad Total</th>
         </tr>
     </thead>
     <tbody>
         {% for item in reporte %}
             <tr>
-                <td>{{ item.estado }}</td>
-                <td>{{ item.total }}</td>
+                <td>{{ item.estado|capfirst }}</td>
+                <td><strong>{{ item.total }}</strong></td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="2">No hay datos para los filtros seleccionados</td>
+                <td colspan="2" style="text-align: center;">No hay datos para mostrar con los filtros actuales.</td>
             </tr>
         {% endfor %}
     </tbody>
 </table>
 
+<div class="contenedor-grafico">
+    <h2 style="text-align: center;">Visualización de Estados</h2>
+    <canvas id="graficoPedidos"></canvas>
+</div>
+
 <hr>
 
-<!-- =========================
-     GRÁFICO
-========================= -->
-<h2>Gráfico: Pedidos por estado</h2>
-
-<canvas id="graficoPedidos" width="400" height="200"></canvas>
+<h2>Detalle Individual de Pedidos</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Producto</th>
+            <th>Entrega Solicitada</th>
+            <th>Plataforma</th>
+            <th>Estado Actual</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in pedidos %}
+        <tr>
+            <td>#{{ p.id }}</td>
+            <td>{{ p.nombre_cliente }}</td>
+            <td>{{ p.producto.nombre }}</td>
+            <td>{{ p.fecha_solicitada|date:"d/m/Y" }}</td>
+            <td>{{ p.get_plataforma_display }}</td>
+            <td><span class="badge-estado">{{ p.get_estado_display }}</span></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" style="text-align: center; padding: 20px;">No se encontraron registros.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 <script>
+    const etiquetasGrafico = {{ estados|safe }};
+    const datosGrafico = {{ totales|safe }};
+
     const ctx = document.getElementById('graficoPedidos').getContext('2d');
 
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: {{ estados|safe }},
+            labels: etiquetasGrafico,
             datasets: [{
                 label: 'Cantidad de pedidos',
-                data: {{ totales|safe }},
+                data: datosGrafico,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
             }]
         },
         options: {
             responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    },
+                    title: {
+                        display: true,
+                        text: 'Número de Pedidos'
+                    }
                 }
             }
         }

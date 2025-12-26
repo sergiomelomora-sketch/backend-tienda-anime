@@ -1,14 +1,9 @@
-# forms.py
-
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.forms.widgets import Input
-
 from .models import Pedido
 
-
-# Widget personalizado para permitir múltiples archivos
 class MultipleFileInput(Input):
     input_type = 'file'
 
@@ -18,10 +13,7 @@ class MultipleFileInput(Input):
             default_attrs.update(attrs)
         super().__init__(default_attrs)
 
-
-# Formulario público de solicitud de pedido
 class PedidoSolicitudForm(forms.ModelForm):
-    # Campo extra (NO pertenece al modelo Pedido)
     imagenes_referencia = forms.FileField(
         required=False,
         widget=MultipleFileInput(),
@@ -55,7 +47,6 @@ class PedidoSolicitudForm(forms.ModelForm):
             'fecha_solicitada': 'Fecha de entrega deseada (opcional)',
         }
 
-    # ✅ VALIDACIÓN CLAVE (requisito del profe)
     def clean_fecha_solicitada(self):
         fecha = self.cleaned_data.get('fecha_solicitada')
 

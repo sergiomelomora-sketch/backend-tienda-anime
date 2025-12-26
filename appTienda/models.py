@@ -15,8 +15,6 @@ class Producto(models.Model):
     precio_base = models.DecimalField(max_digits=8, decimal_places=2)
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     imagen = models.ImageField(upload_to='productos/', blank=True, null=True, verbose_name="Imagen Principal")
-    
-    # NUEVO: Requisito 7 - Opción de marcar productos como destacados.
     destacado = models.BooleanField(default=False, verbose_name="Producto Destacado")
 
     def __str__(self):

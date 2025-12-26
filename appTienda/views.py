@@ -1,11 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
 from django.utils.dateparse import parse_date
-
+from django.core.exceptions import ValidationError
 
 from .models import (
     Producto,
@@ -15,69 +14,54 @@ from .models import (
 )
 from .forms import PedidoSolicitudForm
 
-
-# =========================
-# CATÁLOGO DE PRODUCTOS
-# =========================
 def catalogo(request):
+    token_busqueda = request.GET.get('buscar_pedido')
+    if token_busqueda:
+        try:
+            token_limpio = token_busqueda.strip()
+            pedido_encontrado = Pedido.objects.get(token_seguimiento=token_limpio)
+            return redirect('seguimiento', token=pedido_encontrado.token_seguimiento)
+        except (Pedido.DoesNotExist, ValidationError):
+            pass
+
     productos = Producto.objects.all()
     categorias = Categoria.objects.all()
 
-    # Búsqueda por nombre o descripción
     query = request.GET.get('q')
     if query:
         productos = productos.filter(
-            Q(nombre__icontains=query) |
-            Q(descripcion__icontains=query)
+            Q(nombre__icontains=query) | Q(descripcion__icontains=query)
         )
 
-    # Filtro por categoría
     categoria_id = request.GET.get('categoria')
     if categoria_id:
-        try:
-            productos = productos.filter(categoria_id=categoria_id)
-        except ValueError:
-            pass
+        productos = productos.filter(categoria_id=categoria_id)
 
-    # Separar productos destacados
-    productos_destacados = productos.filter(destacado=True)
-    productos_normales = productos.filter(destacado=False)
+    producto_destacado_real = Producto.objects.annotate(
+        total_pedidos=Count('pedido')
+    ).order_by('-total_pedidos').first()
 
     context = {
         'productos': productos,
         'categorias': categorias,
         'query': query,
         'categoria_seleccionada': categoria_id,
-        'productos_destacados': productos_destacados,
-        'productos_normales': productos_normales,
+        'producto_destacado': producto_destacado_real,
     }
     return render(request, 'catalogo.html', context)
 
-
-# =========================
-# DETALLE DE PRODUCTO
-# =========================
 def detalle_producto(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
-    return render(request, 'detalle_producto.html', {
-        'producto': producto
-    })
+    return render(request, 'detalle_producto.html', {'producto': producto})
 
-
-# =========================
-# SOLICITUD DE PEDIDO
-# =========================
 def solicitar_pedido(request, producto_id=None):
     producto_referencia = None
-
     if producto_id:
         producto_referencia = get_object_or_404(Producto, id=producto_id)
 
     if request.method == 'POST':
         form = PedidoSolicitudForm(request.POST, request.FILES)
-
         if form.is_valid():
-            # Transacción para asegurar consistencia
             with transaction.atomic():
                 pedido = form.save(commit=False)
                 pedido.producto = producto_referencia
@@ -86,117 +70,60 @@ def solicitar_pedido(request, producto_id=None):
                 pedido.estado_pago = 'pendiente'
                 pedido.save()
 
-                # Guardar múltiples imágenes de referencia
                 imagenes = request.FILES.getlist('imagenes_referencia')
                 for imagen_archivo in imagenes:
-                    ImagenReferencia.objects.create(
-                        pedido=pedido,
-                        imagen=imagen_archivo
-                    )
+                    ImagenReferencia.objects.create(pedido=pedido, imagen=imagen_archivo)
 
-            return redirect(
-                'confirmacion_pedido',
-                token=pedido.token_seguimiento
-            )
+            return redirect('confirmacion_pedido', token=pedido.token_seguimiento)
     else:
         form = PedidoSolicitudForm()
 
-    context = {
-        'form': form,
-        'producto_referencia': producto_referencia
-    }
-    return render(request, 'solicitud_pedido.html', context)
+    return render(request, 'solicitud_pedido.html', {'form': form, 'producto_referencia': producto_referencia})
 
 
-# =========================
-# CONFIRMACIÓN DE PEDIDO
-# =========================
 def confirmacion_pedido(request, token):
     pedido = get_object_or_404(Pedido, token_seguimiento=token)
+    url_seguimiento = request.build_absolute_uri(reverse('seguimiento', kwargs={'token': token}))
+    return render(request, 'confirmacion_pedido.html', {'pedido': pedido, 'url_seguimiento': url_seguimiento})
 
-    url_seguimiento = request.build_absolute_uri(
-        reverse('seguimiento', kwargs={'token': token})
-    )
-
-    return render(request, 'confirmacion_pedido.html', {
-        'pedido': pedido,
-        'url_seguimiento': url_seguimiento
-    })
-
-
-# =========================
-# SEGUIMIENTO DE PEDIDO
-# =========================
 def seguimiento_pedido(request, token):
     pedido = get_object_or_404(Pedido, token_seguimiento=token)
-    return render(request, 'seguimiento.html', {
-        'pedido': pedido
-    })
+    return render(request, 'seguimiento.html', {'pedido': pedido})
+
 
 @login_required
 def reporte_pedidos(request):
-    pedidos = Pedido.objects.all()
-
-    # Filtros desde GET
+    pedidos_base = Pedido.objects.all().order_by('-fecha_solicitada')
     fecha_inicio = request.GET.get('fecha_inicio')
     fecha_fin = request.GET.get('fecha_fin')
     plataforma = request.GET.get('plataforma')
 
     if fecha_inicio:
-        pedidos = pedidos.filter(fecha_creacion__date__gte=parse_date(fecha_inicio))
-
+        pedidos_base = pedidos_base.filter(fecha_solicitada__gte=parse_date(fecha_inicio))
     if fecha_fin:
-        pedidos = pedidos.filter(fecha_creacion__date__lte=parse_date(fecha_fin))
+        pedidos_base = pedidos_base.filter(fecha_solicitada__lte=parse_date(fecha_fin))
+    
+    if plataforma and plataforma != 'Todas':
+        pedidos_base = pedidos_base.filter(plataforma=plataforma)
 
-    if plataforma:
-        pedidos = pedidos.filter(plataforma=plataforma)
-
-    # Agrupación por estado
-    reporte = pedidos.values('estado').annotate(
-        total=Count('id')
-    ).order_by('estado')
-
-    # Datos para gráfico
-    estados = [item['estado'] for item in reporte]
-    totales = [item['total'] for item in reporte]
+    reporte = pedidos_base.values('estado').annotate(total=Count('id')).order_by('estado')
+    
+    productos_top = pedidos_base.values('producto__nombre').annotate(
+        cantidad=Count('id')
+    ).order_by('-cantidad')[:5]
+    
+    estados_labels = [item['estado'].capitalize() for item in reporte]
+    totales_data = [item['total'] for item in reporte]
 
     context = {
-        'reporte': reporte,
-        'estados': estados,
-        'totales': totales,
+        'pedidos': pedidos_base,      
+        'reporte': reporte,           
+        'productos_top': productos_top, 
+        'estados': estados_labels,    
+        'totales': totales_data,      
         'fecha_inicio': fecha_inicio,
         'fecha_fin': fecha_fin,
-        'plataforma': plataforma,
-        'plataformas': Pedido.PLATAFORMA,
+        'plataforma_sel': plataforma,
+        'plataformas': Pedido.PLATAFORMA, 
     }
-
     return render(request, 'reporte_pedidos.html', context)
-
-def catalogo(request):
-    productos = Producto.objects.all()
-    categorias = Categoria.objects.all()
-
-    query = request.GET.get('q')
-    if query:
-        productos = productos.filter(
-            Q(nombre__icontains=query) |
-            Q(descripcion__icontains=query)
-        )
-
-    categoria_id = request.GET.get('categoria')
-    if categoria_id:
-        productos = productos.filter(categoria_id=categoria_id)
-
-    # 🔴 NUEVO: filtro por productos destacados
-    destacados = request.GET.get('destacados')
-    if destacados:
-        productos = productos.filter(destacado=True)
-
-    context = {
-        'productos': productos,
-        'categorias': categorias,
-        'query': query,
-        'categoria_seleccionada': categoria_id,
-        'destacados_activo': destacados,  # 👈 para el template
-    }
-    return render(request, 'catalogo.html', context)
