@@ -1,147 +1,62 @@
-# Backend Tienda Anime (Django)
+# 🎌 Sistema de Gestión - Tienda de Anime
 
-Proyecto backend desarrollado en Django para la gestión de una tienda de productos relacionados con anime (merchandising), como figuras, posters, poleras,  pedidos realizados por distintas plataformas.
+Este proyecto es una plataforma de gestión de pedidos e insumos desarrollada con *Django* y *Django REST Framework*. Incluye un sistema de reportes dinámicos con visualización de datos y un conjunto de APIs robustas con validaciones de seguridad.
 
+*URL del Proyecto:* [ [PEGA_AQUÍ_LA_URL_DE_TU_COMPAÑERO] ]
 
-
----
-
-##  Tecnologías utilizadas
-
-* Python 3
-* Django 5
-* SQLite3
-* Django Admin
-* Git & GitHub
+## 👥 Integrantes
+* *Alejandra Paez*
+* *Sergio Melo*
+* *Profesor:* Sebastian Callejas
+* *Fecha:* 26-12-2025
 
 ---
 
-##  Funcionalidades principales
+## 📊 1. Reporte del Sistema (Vista Protegida)
+El sistema cuenta con un panel de administración visual que permite analizar el estado del negocio en tiempo real.
 
-* Gestión de **categorías** de productos
-* Gestión de **productos** de la tienda
-* Gestión de **insumos** asociados a productos
-* Gestión de **pedidos**
-* Estados de pedido y de pago mediante `choices`
-* Registro de pedidos desde distintas **plataformas** (Instagram, WhatsApp, presencial, etc.)
-* Panel de administración personalizado con Django Admin
-
----
-
-##  Seguimiento de pedidos (Token)
-
-Cada pedido genera automáticamente un **token único (UUID)** que permite al cliente acceder al estado de su pedido mediante una URL de seguimiento.
-
-Ejemplo de URL:
-
-```
-/seguimiento/<token_uuid>/
-```
-
-Esto permite:
-
-* Consultar el estado del pedido
-* Consultar el estado del pago
-* Acceso sin autenticación
+* *Seguridad:* La vista está protegida por el sistema de autenticación de Django. Si se intenta acceder sin estar logueado (ej. modo incógnito), el sistema redirigirá al login del administrador.
+* *Gráficos Dinámicos:* Implementamos un gráfico intuitivo para identificar rápidamente el *producto más solicitado*.
+* *Filtros:* Permite agrupar y filtrar pedidos por:
+    * Rango de fechas.
+    * Plataforma (WhatsApp, Instagram, etc.).
+* *Detalle de Datos:* En la parte inferior se presenta una tabla detallada con los pedidos filtrados directamente desde la base de datos.
 
 ---
 
-##  Funcionalidad extra
+## 🚀 2. Documentación de APIs
 
-Para mejorar la usabilidad del panel de control (Admin), implementamos una función extra:
+### API 1: CRUD de Insumos
+Gestión completa de los productos e insumos de la tienda.
+* *Listado y Creación:* GET /api/insumos/ - Permite visualizar la lista completa y agregar nuevos ítems que se reflejan en el Admin.
+* *Detalle, Edición y Borrado:* GET /api/insumos/<id>/ - Permite modificar o eliminar insumos específicos.
 
-Se modificó la vista de listado de Pedidos en el Django Admin para reemplazar el texto simple del campo Estado por etiquetas de color .
+### API 2: Gestión de Pedidos (Restringida)
+Diseñada para la creación y edición de pedidos, protegiendo la privacidad de los datos.
+* *Creación:* POST /api/pedidos/ - Los pedidos se crean vía JSON. (Nota: Por seguridad, el listado general GET y el borrado están deshabilitados en esta ruta).
+* *Modificación:* PUT /api/pedidos/<id>/ - Permite actualizar los datos de un pedido existente.
 
-Esto permite al administrador identificar visualmente el estado de un pedido (ej: 🔴 Cancelado, 🟢 Finalizado, 🟠 En proceso) sin tener que leer el campo completo, optimizando la gestión  de trabajo.
-
-##  Estructura del proyecto
-
-```
-backend-tienda-anime/
-│
-├── appTienda/
-│   ├── migrations/
-│   ├── admin.py
-│   ├── apps.py
-│   ├── models.py
-│   ├── views.py
-│   ├── urls.py
-│   ├── forms.py
-├── tienda_articulos/
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-│
-├── db.sqlite3
-├── manage.py
-└── README.md
-```
+### API 3: Filtros por Parámetros (Query Params)
+Endpoint especializado para consultas avanzadas:
+* *Rango de Fechas:* ?desde=2025-12-16&hasta=2025-12-22
+* *Límite de Resultados:* &max=2 (Limita la cantidad de objetos devueltos).
+* *Por Estado:* ?estado=solicitado (Filtra por estado del pedido).
 
 ---
 
-##  Instalación y ejecución
+## ✅ 3. Mejoras y Retroalimentación (Evolución de Evaluación 3)
+En esta entrega hemos corregido y mejorado puntos críticos detectados anteriormente:
 
-1. Clonar el repositorio:
-
-```bash
-https://github.com/sergiomelomora-sketch/backend-tienda-anime/tree/main
-```
-
-2. Entrar al proyecto:
-
-```bash
-cd tienda_articulos
-```
-
-3. Ejecutar migraciones:
-
-```bash
-python manage.py migrate
-```
-
-4. Crear superusuario:
-
-```bash
-python manage.py createsuperuser
-```
-
-5. Ejecutar el servidor:
-
-```bash
-python manage.py runserver
-```
-
-6. Acceder al panel de administración:
-
-```
-http://127.0.0.1:8000/admin/
-```
+1.  *Validación de Fechas:* Implementamos lógica en los Serializers para impedir la creación de pedidos con fechas anteriores a la actual. Esto funciona tanto en el Admin como en las peticiones JSON.
+2.  *Visualización en Admin:* Se optimizó la visualización de las imágenes de referencia en el panel de administración para una mejor gestión.
+3.  *Token de Seguimiento:* Se agregó el campo de token de seguimiento a los pedidos, mejorando el control de cada solicitud.
+4.  *Validación de Entradas:* Si se ingresa un estado inexistente o una fecha inválida en la API 3, el sistema responde con un error *400 Bad Request* detallando el fallo.
 
 ---
 
-## Decisiones de diseño
-
-* Se utilizaron **UUID** para el seguimiento de pedidos por seguridad.
-* Se emplearon **choices** en los modelos para estandarizar estados.
-* Se personalizó Django Admin para mejorar la usabilidad.
-* La temática del proyecto fue adaptada a **tienda de anime** manteniendo los requerimientos de la pauta.
-
----
-
-##  Declaración de uso de Inteligencia Artificial
-
-> Para el desarrollo de este proyecto se utilizó Inteligencia Artificial (ChatGPT) como herramienta de apoyo, principalmente para:
-
-* Comprensión del framework Django y su estructura.
-* Apoyo en la definición de modelos, vistas y rutas.
-* Resolución de errores puntuales durante el desarrollo.
-* Explicación de conceptos técnicos como uso de `choices`.
-
-> La herramienta fue utilizada como apoyo al aprendizaje. Todas las decisiones de diseño, comprensión del código y la implementación final fueron realizadas y validadas por el equipo.
-
----
-
-## 👨‍💻 Autores
-
-**Sergio Melo y Alejandra Paez**
-Proyecto académico – Backend Django
+## 🛠️ Instalación Local
+1. Clonar el repositorio.
+2. Crear un entorno virtual: python -m venv venv.
+3. Instalar dependencias: pip install -r requirements.txt.
+4. Ejecutar migraciones: python manage.py migrate.
+5. Iniciar servidor: python manage.py runserver.
